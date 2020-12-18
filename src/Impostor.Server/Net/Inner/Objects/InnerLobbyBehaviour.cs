@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Impostor.Api.Games;
 using Impostor.Api.Net;
 using Impostor.Api.Net.Inner.Objects;
@@ -31,6 +31,11 @@ namespace Impostor.Server.Net.Inner.Objects
         public override void Deserialize(IClientPlayer sender, IClientPlayer? target, IMessageReader reader, bool initialState)
         {
             throw new System.NotImplementedException();
+        }
+
+        public override async ValueTask HandleDataAsync(ClientPlayer sender, ClientPlayer? target, IMessageReader reader, bool initialState)
+        {
+            Deserialize(sender, target, reader, initialState);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using System.Threading.Tasks;
 using Impostor.Api;
 using Impostor.Api.Innersloth;
@@ -143,6 +143,11 @@ namespace Impostor.Server.Net.Inner.Objects.Components
             _lastSequenceId = minSid;
             _targetSyncPosition = position;
             _targetSyncVelocity = Vector2.Zero;
+        }
+
+        public override async ValueTask HandleDataAsync(ClientPlayer sender, ClientPlayer? target, IMessageReader reader, bool initialState)
+        {
+            Deserialize(sender, target, reader, initialState);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+using System;
+using System.Threading.Tasks;
 using Impostor.Api.Net;
 using Impostor.Api.Net.Inner;
 using Impostor.Api.Net.Messages;
@@ -27,5 +28,7 @@ namespace Impostor.Server.Net.Inner
             return OwnerId == player.Client.Id ||
                    (OwnerId == HostInheritId && player.IsHost);
         }
+
+        public abstract ValueTask HandleDataAsync(ClientPlayer sender, ClientPlayer? target, IMessageReader reader, bool initialState);
     }
 }

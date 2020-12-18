@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -182,6 +182,11 @@ namespace Impostor.Server.Net.Inner.Objects
                     Id = taskId,
                 });
             }
+        }
+
+        public override async ValueTask HandleDataAsync(ClientPlayer sender, ClientPlayer? target, IMessageReader reader, bool initialState)
+        {
+            Deserialize(sender, target, reader, initialState);
         }
     }
 }

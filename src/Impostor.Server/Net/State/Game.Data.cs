@@ -231,7 +231,7 @@ namespace Impostor.Server.Net.State
                         var netId = reader.ReadPackedUInt32();
                         if (_allObjectsFast.TryGetValue(netId, out var obj))
                         {
-                            obj.Deserialize(sender, target, reader, false);
+                            await obj.HandleDataAsync(sender, target, reader, false);
                         }
                         else
                         {

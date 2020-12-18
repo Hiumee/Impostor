@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Impostor.Api.Events.Managers;
+using Impostor.Api.Games;
+using Impostor.Api.Net.Inner.Objects;
 using Impostor.Api.Net.Messages;
 
 namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
@@ -39,6 +43,11 @@ namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
             {
                 CompletedConsoles.Add(reader.ReadPackedInt32());
             }
+        }
+
+        public async ValueTask HandleDataAsync(IMessageReader reader, bool initialState, IGame game, IInnerShipStatus ship, IEventManager eventManager)
+        {
+            Deserialize(reader, initialState);
         }
     }
 }

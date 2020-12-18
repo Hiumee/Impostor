@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Impostor.Api;
@@ -83,6 +83,11 @@ namespace Impostor.Server.Net.Inner.Objects.Components
                     }
                 }
             }
+        }
+
+        public override async ValueTask HandleDataAsync(ClientPlayer sender, ClientPlayer? target, IMessageReader reader, bool initialState)
+        {
+            Deserialize(sender, target, reader, initialState);
         }
     }
 }

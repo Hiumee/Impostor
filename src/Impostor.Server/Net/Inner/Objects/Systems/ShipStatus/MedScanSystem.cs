@@ -1,4 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Impostor.Api.Events.Managers;
+using Impostor.Api.Games;
+using Impostor.Api.Net;
+using Impostor.Api.Net.Inner.Objects;
 using Impostor.Api.Net.Messages;
 
 namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
@@ -26,6 +32,18 @@ namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
             for (var i = 0; i < num; i++)
             {
                 UsersList.Add(reader.ReadByte());
+            }
+        }
+
+        public async ValueTask HandleDataAsync(IMessageReader reader, bool initialState, IGame game, IInnerShipStatus ship, IEventManager eventManager)
+        {
+            Deserialize(reader, initialState);
+
+            List<IClientPlayer> players = new List<IClientPlayer>();
+
+            foreach (var id in UsersList)
+            {
+                players.Add(game.Players.Where(x => x.Character.PlayerId == id).First());
             }
         }
     }

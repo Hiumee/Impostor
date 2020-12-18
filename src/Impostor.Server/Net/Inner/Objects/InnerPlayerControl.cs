@@ -451,5 +451,10 @@ namespace Impostor.Server.Net.Inner.Objects
             PlayerInfo.IsDead = true;
             PlayerInfo.LastDeathReason = reason;
         }
+
+        public override async ValueTask HandleDataAsync(ClientPlayer sender, ClientPlayer? target, IMessageReader reader, bool initialState)
+        {
+            Deserialize(sender, target, reader, initialState);
+        }
     }
 }

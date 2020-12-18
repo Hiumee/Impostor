@@ -66,5 +66,10 @@ namespace Impostor.Server.Net.Inner.Objects.Components
         {
             throw new NotImplementedException();
         }
+
+        public override async ValueTask HandleDataAsync(ClientPlayer sender, ClientPlayer? target, IMessageReader reader, bool initialState)
+        {
+            Deserialize(sender, target, reader, initialState);
+        }
     }
 }

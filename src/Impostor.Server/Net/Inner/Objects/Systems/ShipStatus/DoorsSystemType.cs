@@ -1,8 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Impostor.Api;
+using Impostor.Api.Events.Managers;
 using Impostor.Api.Games;
 using Impostor.Api.Innersloth;
+using Impostor.Api.Net.Inner.Objects;
 using Impostor.Api.Net.Messages;
+using Impostor.Server.Events.Ship;
 
 namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
 {
@@ -55,6 +60,14 @@ namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
                     }
                 }
             }
+        }
+
+        public async ValueTask HandleDataAsync(IMessageReader reader, bool initialState, IGame game, IInnerShipStatus ship, IEventManager eventManager)
+        {
+
+            Deserialize(reader, initialState);
+
+            await eventManager.CallAsync(new ShipDoorStateChangedEvent(game, ship, _doors));
         }
     }
 }

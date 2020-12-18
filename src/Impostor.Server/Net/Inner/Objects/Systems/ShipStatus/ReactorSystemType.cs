@@ -1,6 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Impostor.Api.Events.Managers;
+using Impostor.Api.Games;
+using Impostor.Api.Net;
+using Impostor.Api.Net.Inner.Objects;
 using Impostor.Api.Net.Messages;
+using Impostor.Server.Events.Ship;
 
 namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
 {
@@ -34,6 +41,19 @@ namespace Impostor.Server.Net.Inner.Objects.Systems.ShipStatus
             {
                 UserConsolePairs.Add(new Tuple<byte, byte>(reader.ReadByte(), reader.ReadByte()));
             }
+        }
+
+        public async ValueTask HandleDataAsync(IMessageReader reader, bool initialState, IGame game, IInnerShipStatus ship, IEventManager eventManager)
+        {
+            Deserialize(reader, initialState);
+
+            var playersHolding = new HashSet<Tuple<IClientPlayer, byte>>();
+            foreach (var pair in UserConsolePairs)
+            {
+                playersHolding.Add(new Tuple<IClientPlayer, byte>(game.Players.Where(x => x.Character.PlayerId == pair.Item1).First(), pair.Item2));
+            }
+
+            await eventManager.CallAsync(new ShipReactorStateChangedEvent(game, ship, IsActive, Countdown, playersHolding));
         }
     }
 }

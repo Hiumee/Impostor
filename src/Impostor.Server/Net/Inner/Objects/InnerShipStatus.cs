@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Impostor.Api;
+using Impostor.Api.Events.Managers;
 using Impostor.Api.Innersloth;
 using Impostor.Api.Net;
 using Impostor.Api.Net.Inner.Objects;
@@ -16,12 +17,14 @@ namespace Impostor.Server.Net.Inner.Objects
     internal class InnerShipStatus : InnerNetObject, IInnerShipStatus
     {
         private readonly ILogger<InnerShipStatus> _logger;
+        private readonly IEventManager _eventManager;
         private readonly Game _game;
         private readonly Dictionary<SystemTypes, ISystemType> _systems;
 
-        public InnerShipStatus(ILogger<InnerShipStatus> logger, Game game)
+        public InnerShipStatus(ILogger<InnerShipStatus> logger, IEventManager eventManager, Game game)
         {
             _logger = logger;
+            _eventManager = eventManager;
             _game = game;
 
             _systems = new Dictionary<SystemTypes, ISystemType>
@@ -84,7 +87,6 @@ namespace Impostor.Server.Net.Inner.Objects
                     var player = reader.ReadNetObject<InnerPlayerControl>(_game);
                     var amount = reader.ReadByte();
 
-                    // TODO: Modify data (?)
                     break;
                 }
 
@@ -122,7 +124,7 @@ namespace Impostor.Server.Net.Inner.Objects
                 {
                     if (_systems.TryGetValue(systemType, out var system))
                     {
-                        system.Deserialize(reader, true);
+                        system.HandleDataAsync(reader, false, _game, this, _eventManager);
                     }
                 }
             }
@@ -137,11 +139,60 @@ namespace Impostor.Server.Net.Inner.Objects
                     {
                         if (_systems.TryGetValue(systemType, out var system))
                         {
-                            system.Deserialize(reader, false);
+                            system.HandleDataAsync(reader, false, _game, this, _eventManager);
                         }
                     }
                 }
             }
+        }
+
+        public async ValueTask Handle(IClientPlayer sender, IClientPlayer? target, IMessageReader reader, bool initialState)
+        {
+            if (!sender.IsHost)
+            {
+                throw new ImpostorCheatException($"Client attempted to send data for {nameof(InnerShipStatus)} as non-host");
+            }
+
+            if (target != null)
+            {
+                throw new ImpostorCheatException($"Client attempted to send {nameof(InnerShipStatus)} data to a specific player, must be broadcast");
+            }
+
+            if (initialState)
+            {
+                // TODO: (_systems[SystemTypes.Doors] as DoorsSystemType).SetDoors();
+                foreach (var systemType in SystemTypeHelpers.AllTypes)
+                {
+                    if (_systems.TryGetValue(systemType, out var system))
+                    {
+                        await system.HandleDataAsync(reader, false, _game, this, _eventManager);
+                    }
+                }
+            }
+            else
+            {
+                var count = reader.ReadPackedUInt32();
+
+                foreach (var systemType in SystemTypeHelpers.AllTypes)
+                {
+                    // TODO: Not sure what is going on here, check.
+                    if ((count & 1 << (int)(systemType & (SystemTypes.ShipTasks | SystemTypes.Doors))) != 0L)
+                    {
+                        if (_systems.TryGetValue(systemType, out var system))
+                        {
+                            await system.HandleDataAsync(reader, false, _game, this, _eventManager);
+                        }
+                    }
+                }
+            }
+
+            return;
+        }
+
+        public override async ValueTask HandleDataAsync(ClientPlayer sender, ClientPlayer? target, IMessageReader reader, bool initialState)
+        {
+            // TODO: change deserialization to be async (?)
+            await Handle(sender, target, reader, initialState);
         }
     }
 }
